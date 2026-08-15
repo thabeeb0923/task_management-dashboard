@@ -1,9 +1,13 @@
+import { useState } from "react";
 import type { Task } from "../types/task";
 import TaskList from "../components/TaskList";
 import TaskStats from "../components/TaskStats";
+import TaskForm from "../components/TaskForm";
+
 function Dashboard() {
-  const tasks: Task[] = [
-    {
+  //const tasks: Task[] = [
+    const [tasks, setTasks] = useState<Task[]>([
+  {
       id: 1,
       title: "Prepare for interview",
       description: "Practice React and TypeScript",
@@ -21,7 +25,7 @@ function Dashboard() {
       description: "Create the task management UI",
       status: "completed",
     },
-  ];
+  ]);
 const total = tasks.length;
 
 const completed = tasks.filter(
@@ -35,6 +39,23 @@ const inProgress = tasks.filter(
 const todo = tasks.filter(
   (task) => task.status === "todo"
 ).length;
+function handleAddTask(
+  title: string,
+  description: string,
+  status: Task["status"]
+) {
+  const newTask: Task = {
+    id: Date.now(),
+    title,
+    description,
+    status,
+  };
+
+  setTasks((currentTasks) => [
+    ...currentTasks,
+    newTask,
+  ]);
+}
  return (
   <div className="min-h-screen bg-gray-100">
     <header className="border-b bg-white">
@@ -64,6 +85,7 @@ const todo = tasks.filter(
   />
 
   <TaskList tasks={tasks} />
+  <TaskForm onAddTask={handleAddTask} />
 </main>
   </div>
 );

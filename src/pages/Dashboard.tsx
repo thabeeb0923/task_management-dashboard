@@ -3,7 +3,7 @@ import type { Task } from "../types/task";
 import TaskList from "../components/TaskList";
 import TaskStats from "../components/TaskStats";
 import TaskForm from "../components/TaskForm";
-
+import TaskFilters from "../components/TaskFilters";
 function Dashboard() {
   //const tasks: Task[] = [
     const [tasks, setTasks] = useState<Task[]>([
@@ -26,6 +26,9 @@ function Dashboard() {
       status: "completed",
     },
   ]);
+  const [searchTerm, setSearchTerm] = useState("");
+const [statusFilter, setStatusFilter] =
+  useState<Task["status"] | "all">("all");
 const total = tasks.length;
 
 const completed = tasks.filter(
@@ -39,6 +42,22 @@ const inProgress = tasks.filter(
 const todo = tasks.filter(
   (task) => task.status === "todo"
 ).length;
+
+const filteredTasks = tasks.filter((task) => {
+  const matchesSearch =
+    task.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase()) ||
+    task.description
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+  const matchesStatus =
+    statusFilter === "all" ||
+    task.status === statusFilter;
+
+  return matchesSearch && matchesStatus;
+});
 function handleAddTask(
   title: string,
   description: string,
@@ -77,15 +96,23 @@ function handleAddTask(
     </header>
 
 <main className="mx-auto max-w-6xl px-6 py-8">
-  <TaskStats
-    total={total}
-    completed={completed}
-    inProgress={inProgress}
-    todo={todo}
-  />
+<TaskStats
+  total={total}
+  completed={completed}
+  inProgress={inProgress}
+  todo={todo}
+/>
 
-  <TaskList tasks={tasks} />
-  <TaskForm onAddTask={handleAddTask} />
+<TaskForm onAddTask={handleAddTask} />
+
+<TaskFilters
+  searchTerm={searchTerm}
+  statusFilter={statusFilter}
+  onSearchChange={setSearchTerm}
+  onStatusChange={setStatusFilter}
+/>
+
+<TaskList tasks={filteredTasks} />
 </main>
   </div>
 );

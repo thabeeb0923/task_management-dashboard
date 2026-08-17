@@ -4,6 +4,8 @@ import TaskList from "../components/TaskList";
 import TaskStats from "../components/TaskStats";
 import TaskForm from "../components/TaskForm";
 import TaskFilters from "../components/TaskFilters";
+import EditTaskForm from "../components/EditTaskForm";
+import Modal from "../components/Modal";
 function Dashboard() {
   //const tasks: Task[] = [
     const [tasks, setTasks] = useState<Task[]>([
@@ -27,8 +29,16 @@ function Dashboard() {
     },
   ]);
   const [searchTerm, setSearchTerm] = useState("");
-const [statusFilter, setStatusFilter] =
+
+  const [statusFilter, setStatusFilter] =
   useState<Task["status"] | "all">("all");
+
+  const [editingTask, setEditingTask] =
+  useState<Task | null>(null);
+
+  const [isAddModalOpen, setIsAddModalOpen] =
+  useState(false);
+
 const total = tasks.length;
 
 const completed = tasks.filter(
@@ -58,6 +68,8 @@ const filteredTasks = tasks.filter((task) => {
 
   return matchesSearch && matchesStatus;
 });
+
+
 function handleAddTask(
   title: string,
   description: string,
@@ -74,7 +86,33 @@ function handleAddTask(
     ...currentTasks,
     newTask,
   ]);
+  setIsAddModalOpen(false);
 }
+
+
+function handleDeleteTask(id: number) {
+  setTasks((currentTasks) =>
+    currentTasks.filter((task) => task.id !== id)
+  );
+}
+
+
+function handleEditTask(task: Task) {
+  setEditingTask(task);
+}
+
+function handleSaveTask(updatedTask: Task) {
+  setTasks((currentTasks) =>
+    currentTasks.map((task) =>
+      task.id === updatedTask.id
+        ? updatedTask
+        : task
+    )
+  );
+
+  setEditingTask(null);
+}
+
  return (
   <div className="min-h-screen bg-gray-100">
     <header className="border-b bg-white">
@@ -89,9 +127,13 @@ function handleAddTask(
           </p>
         </div>
 
-        <button className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700">
-          Add Task
-        </button>
+        <button
+  type="button"
+  onClick={() => setIsAddModalOpen(true)}
+  className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+>
+  Add Task
+</button>
       </div>
     </header>
 
@@ -103,8 +145,13 @@ function handleAddTask(
   todo={todo}
 />
 
-<TaskForm onAddTask={handleAddTask} />
-
+<Modal
+  isOpen={isAddModalOpen}
+  title="Add Task"
+  onClose={() => setIsAddModalOpen(false)}
+>
+  <TaskForm onAddTask={handleAddTask} />
+</Modal>
 <TaskFilters
   searchTerm={searchTerm}
   statusFilter={statusFilter}
@@ -112,9 +159,31 @@ function handleAddTask(
   onStatusChange={setStatusFilter}
 />
 
-<TaskList tasks={filteredTasks} />
+<TaskList
+  tasks={filteredTasks}
+  onDeleteTask={handleDeleteTask}
+  onEditTask={handleEditTask}
+/>
+
+<Modal
+  isOpen={editingTask !== null}
+  title="Edit Task"
+  onClose={() => setEditingTask(null)}
+>
+  {editingTask && (
+    <EditTaskForm 
+      task={editingTask}
+      onSave={handleSaveTask}
+      onCancel={() => setEditingTask(null)}
+    />
+  )}
+</Modal>
+  <TaskForm onAddTask={handleAddTask} />
+
 </main>
+
   </div>
 );
 }
 export default Dashboard;
+
